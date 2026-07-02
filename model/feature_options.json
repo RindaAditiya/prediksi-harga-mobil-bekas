@@ -1,0 +1,83 @@
+{
+  "Brand": [
+    "Audi",
+    "BMW",
+    "Ford",
+    "Honda",
+    "Mercedes",
+    "Tesla",
+    "Toyota"
+  ],
+  "Fuel Type": [
+    "Diesel",
+    "Electric",
+    "Hybrid",
+    "Petrol"
+  ],
+  "Transmission": [
+    "Automatic",
+    "Manual"
+  ],
+  "Condition": [
+    "Like New",
+    "New",
+    "Used"
+  ],
+  "Model": [
+    "3 Series",
+    "5 Series",
+    "A3",
+    "A4",
+    "Accord",
+    "C-Class",
+    "CR-V",
+    "Camry",
+    "Civic",
+    "Corolla",
+    "E-Class",
+    "Explorer",
+    "Fiesta",
+    "Fit",
+    "Focus",
+    "GLA",
+    "GLC",
+    "Model 3",
+    "Model S",
+    "Model X",
+    "Model Y",
+    "Mustang",
+    "Prius",
+    "Q5",
+    "Q7",
+    "RAV4",
+    "X3",
+    "X5"
+  ],
+  "numeric_ranges": {
+    "Year": {
+      "min": 2000.0,
+      "max": 2023.0
+    },
+    "Engine Size": {
+      "min": 1.0,
+      "max": 6.0
+    },
+    "Mileage": {
+      "min": 15.0,
+      "max": 299967.0
+    }
+  },
+  "best_model_name": "Linear Regression",
+  "numeric_features": [
+    "Year",
+    "Engine Size",
+    "Mileage"
+  ],
+  "categorical_features": [
+    "Brand",
+    "Fuel Type",
+    "Transmission",
+    "Condition",
+    "Model"
+  ]
+}
