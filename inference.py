@@ -1,20 +1,10 @@
-"""
-inference.py
-Skrip inferensi: memuat kembali model (pipeline) yang sudah disimpan,
-lalu digunakan untuk memprediksi harga mobil bekas dari input baru.
-
-Karena preprocessing (scaling & encoding) sudah dibungkus dalam satu
-sklearn Pipeline saat training, urutan transformasi yang dipakai saat
-inferensi otomatis identik dengan saat training -- tidak perlu
-menerapkan scaler/encoder secara manual dan terpisah.
-"""
-
 import json
 import joblib
 import pandas as pd
 
 MODEL_PATH = "model/model.pkl"
 OPTIONS_PATH = "model/feature_options.json"
+KURS_USD_TO_IDR = 16000  # ubah sesuai kurs terbaru bila perlu
 
 
 def load_model(model_path: str = MODEL_PATH):
@@ -58,8 +48,8 @@ def predict_price(
         "Model": model_name,
     }])
 
-    prediction = pipeline.predict(input_df)[0]
-    return float(prediction)
+    prediction_usd = pipeline.predict(input_df)[0]
+    return float(prediction_usd) * KURS_USD_TO_IDR
 
 
 if __name__ == "__main__":
@@ -72,6 +62,6 @@ if __name__ == "__main__":
         transmission="Automatic",
         mileage=45000,
         condition="Used",
-        model_name="Civic",
+        model_name="Corolla",
     )
-    print(f"Estimasi harga mobil: ${contoh_harga:,.2f}")
+    print(f"Estimasi harga mobil: Rp {contoh_harga:,.0f}".replace(",", "."))
