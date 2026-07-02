@@ -10,6 +10,15 @@ import streamlit as st
 
 st.set_page_config(page_title="Prediksi Harga Mobil Bekas", page_icon="🚗", layout="centered")
 
+# Kurs konversi USD -> IDR (dataset asli berharga dalam USD).
+# Ubah angka ini kapan saja sesuai kurs terbaru.
+KURS_USD_TO_IDR = 16000
+
+
+def format_rupiah(angka: float) -> str:
+    """Format angka jadi 'Rp 123.456.789' gaya Indonesia."""
+    return "Rp " + f"{angka:,.0f}".replace(",", ".")
+
 
 @st.cache_resource
 def load_model():
@@ -24,6 +33,7 @@ def load_feature_options():
 
 pipeline = load_model()
 options = load_feature_options()
+brand_model_map = options["brand_model_map"]
 
 st.title("🚗 Prediksi Harga Mobil Bekas")
 st.write(
@@ -38,12 +48,16 @@ col1, col2 = st.columns(2)
 
 with col1:
     brand = st.selectbox("Brand", options["Brand"])
+
+    # Dropdown Model mengikuti Brand yang dipilih
+    model_choices = brand_model_map.get(brand, options["Model"])
+    model_name = st.selectbox("Model", model_choices)
+
     fuel_type = st.selectbox("Fuel Type", options["Fuel Type"])
     transmission = st.selectbox("Transmission", options["Transmission"])
-    condition = st.selectbox("Condition", options["Condition"])
 
 with col2:
-    model_name = st.selectbox("Model", options["Model"])
+    condition = st.selectbox("Condition", options["Condition"])
     year = st.number_input(
         "Year",
         min_value=int(options["numeric_ranges"]["Year"]["min"]),
@@ -80,14 +94,17 @@ if st.button("🔮 Prediksi Harga", type="primary", use_container_width=True):
         "Model": model_name,
     }])
 
-    prediction = pipeline.predict(input_df)[0]
+    prediction_usd = pipeline.predict(input_df)[0]
+    prediction_idr = prediction_usd * KURS_USD_TO_IDR
 
-    st.success(f"### Estimasi Harga: ${prediction:,.2f}")
+    st.success(f"### Estimasi Harga: {format_rupiah(prediction_idr)}")
+    st.caption(f"(kurs yang dipakai: 1 USD = {format_rupiah(KURS_USD_TO_IDR)})")
+
     with st.expander("Lihat detail input"):
         st.dataframe(input_df, use_container_width=True)
 
 st.divider()
 st.caption(
-    "Model dilatih menggunakan dataset Car Price Prediction (Kaggle). "
-    "Prediksi bersifat estimasi dan tidak menggantikan penilaian profesional."
+    "Model dilatih menggunakan dataset Car Price Prediction (Kaggle) yang berharga dalam USD, "
+    "lalu dikonversi ke Rupiah. Prediksi bersifat estimasi dan tidak menggantikan penilaian profesional."
 )
