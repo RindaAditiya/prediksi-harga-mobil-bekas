@@ -1,87 +1,94 @@
-# Prediksi Harga Mobil Bekas (Used Car Price Prediction)
+# Tugas Akhir — Fundamental Sains Data
+## Implementasi Supervised Learning dan Unsupervised Learning
 
-Proyek tugas akhir mata kuliah Fundamen Sains Data — Aplikasi Supervised Learning.
+Repository ini adalah tugas akhir mata kuliah **Fundamental Sains Data**. Sesuai ketentuan tugas, di dalamnya ada **dua proyek analisis data yang berbeda dan berdiri sendiri-sendiri**: satu proyek pakai pendekatan *supervised learning* (data punya label/target yang mau diprediksi), satu lagi pakai pendekatan *unsupervised learning* (data tidak punya label, kita cari pola/kelompok tersembunyi di dalamnya). Kedua proyek dikerjakan dengan dataset yang berbeda dan sama sekali tidak saling berhubungan — digabung di satu repo ini hanya karena ketentuan pengumpulan tugasnya minta begitu.
 
-## 1. Deskripsi Proyek
+---
 
-- **Kasus**: Regresi — memprediksi harga jual mobil bekas berdasarkan spesifikasinya.
-- **Dataset**: [Car Price Prediction (Kaggle)](https://www.kaggle.com/datasets/zafarali27/car-price-prediction) — 2500 baris, 10 kolom.
-- **Fitur (X)**: `Brand`, `Year`, `Engine Size`, `Fuel Type`, `Transmission`, `Mileage`, `Condition`, `Model`
-- **Target (y)**: `Price`
-- **Algoritma dibandingkan**: Linear Regression vs Random Forest Regressor
+## Studi Kasus 1 — Supervised Learning
+### Prediksi Harga Mobil Bekas
 
-## 2. Struktur Folder
+**Apa yang dikerjakan di sini?**
+Proyek ini mencoba menjawab pertanyaan: *"kalau tahu spesifikasi sebuah mobil bekas (merek, tahun, jarak tempuh, dst), berapa kira-kira harga jualnya?"*. Ini termasuk masalah **regresi**, karena yang diprediksi adalah angka (harga), bukan kategori.
 
-```
-project/
-├── data/
-│   └── car_price_prediction.csv     # dataset mentah
-├── model/
-│   ├── model.pkl                    # pipeline terbaik (preprocessing + model)
-│   ├── feature_options.json         # opsi kategori & rentang numerik untuk UI
-│   └── model_comparison.csv         # tabel perbandingan metrik evaluasi
-├── model_training.ipynb             # notebook lengkap: EDA -> preprocessing -> training -> evaluasi -> simpan model
-├── inference.py                     # skrip inferensi standalone
-├── app.py                           # aplikasi Streamlit
-├── requirements.txt
-└── README.md
-```
+**Datanya dari mana?**
+Dataset [Car Price Prediction](https://www.kaggle.com/datasets/zafarali27/car-price-prediction) dari Kaggle, dibuat oleh akun bernama zafarali27. Isinya 2.500 baris data mobil dengan 10 kolom informasi.
 
-## 3. Menjalankan Secara Lokal
+**Fitur apa saja yang dipakai untuk memprediksi?**
+Merek mobil (`Brand`), tahun produksi (`Year`), ukuran mesin (`Engine Size`), jenis bahan bakar (`Fuel Type`), jenis transmisi (`Transmission`), jarak tempuh (`Mileage`), kondisi mobil (`Condition`), dan model mobil (`Model`). Yang mau diprediksi (target) adalah `Price`, alias harga jualnya.
 
+**Algoritma apa yang dibandingkan?**
+Dua algoritma dicoba dan dibandingkan performanya: **Linear Regression** (model paling sederhana, menarik garis lurus antar hubungan fitur dan harga) dan **Random Forest Regressor** (model yang lebih kompleks, menggabungkan banyak decision tree untuk hasil yang biasanya lebih akurat).
+
+**Bagaimana cara mengukur model ini bagus atau tidak?**
+Pakai tiga metrik: **MAE** (rata-rata seberapa jauh tebakan model dari harga asli, dalam satuan yang sama dengan harga), **RMSE** (mirip MAE tapi lebih menghukum tebakan yang sangat meleset), dan **R² Score** (seberapa besar persentase variasi harga yang berhasil dijelaskan oleh model, dari 0 sampai 1 — semakin dekat ke 1 semakin bagus).
+
+**Di mana kodenya?**
+Seluruh proses (mulai dari baca data, eksplorasi data, membersihkan data, melatih model, sampai mengevaluasi hasil) ada di file [`model_training.ipynb`](./model_training.ipynb). Ini file notebook yang bisa dibuka dan dijalankan langkah demi langkah, sambil membaca penjelasan di tiap bagiannya.
+
+**Ada aplikasinya juga?**
+Ya, file [`app.py`](./app.py) adalah aplikasi interaktif berbasis Gradio, jadi orang lain bisa mengisi spesifikasi mobil lewat tampilan web sederhana dan langsung dapat prediksi harganya, tanpa perlu tahu coding sama sekali.
+
+**Cara menjalankan notebooknya sendiri:**
 ```bash
-# 1. Buat virtual environment (opsional tapi disarankan)
-python -m venv venv
-source venv/bin/activate        # Windows: venv\Scripts\activate
-
-# 2. Install dependencies
 pip install -r requirements.txt
-
-# 3. (Opsional) Latih ulang model dari awal
 jupyter notebook model_training.ipynb
-# atau jalankan langsung:
-python train_model.py
-
-# 4. Tes skrip inferensi
-python inference.py
-
-# 5. Jalankan aplikasi
-streamlit run app.py
 ```
+Baris pertama menginstall semua library Python yang dibutuhkan (pandas, scikit-learn, dst). Baris kedua membuka notebook-nya di Jupyter.
 
-Aplikasi akan terbuka di `http://localhost:8501`.
+**Cara menjalankan aplikasinya:**
+```bash
+python app.py
+```
+Setelah dijalankan, akan muncul link lokal (biasanya `http://127.0.0.1:7860`) yang bisa dibuka di browser.
 
-## 4. Ringkasan Preprocessing & Feature Engineering
+---
 
-1. **Data Cleaning**: cek missing value (tidak ada), cek & hapus duplikat (tidak ada), cek & hapus outlier numerik dengan metode IQR (tidak ditemukan outlier signifikan pada dataset ini), drop kolom `Car ID` (hanya identifier, tidak prediktif).
-2. **Feature Scaling**: `Year`, `Engine Size`, `Mileage` distandardisasi dengan `StandardScaler`.
-3. **Feature Encoding**: `Brand`, `Fuel Type`, `Transmission`, `Condition`, `Model` di-encode dengan `OneHotEncoder`.
-4. Kedua langkah di atas dibungkus dalam satu `ColumnTransformer` + `Pipeline` scikit-learn, sehingga:
-   - Urutan transformasi saat training dan saat inferensi **selalu identik** (poin penting di rubrik tugas).
-   - Cukup 1 file (`model.pkl`) untuk menyimpan model *sekaligus* scaler & encoder — tidak perlu file terpisah.
+## Studi Kasus 2 — Unsupervised Learning
+### Segmentasi Pasien Berdasarkan Indikator Kesehatan Diabetes
 
-## 5. Hasil Evaluasi
+**Apa yang dikerjakan di sini?**
+Beda dengan studi kasus 1, di sini kita tidak punya "jawaban benar" untuk diprediksi. Yang dilakukan adalah mengelompokkan pasien-pasien ke dalam beberapa "profil kesehatan" berdasarkan kemiripan data medis mereka (kadar gula darah, BMI, usia, dst), tanpa memberi tahu model siapa yang sebenarnya kena diabetes dan siapa yang tidak. Tujuannya melihat apakah ada pola alami yang muncul dari data itu sendiri — ini yang disebut **clustering**.
 
-Lihat tabel lengkap di `model/model_comparison.csv` (dihasilkan otomatis setiap kali notebook dijalankan). Model dengan **R² tertinggi** dan **RMSE/MAE terendah** dipilih sebagai model terbaik dan disimpan sebagai `model/model.pkl`.
+**Datanya dari mana?**
+Dataset [Pima Indians Diabetes Database](https://www.kaggle.com/datasets/uciml/pima-indians-diabetes-database), aslinya dikumpulkan oleh National Institute of Diabetes and Digestive and Kidney Diseases. Berisi data 768 pasien perempuan dengan 8 indikator kesehatan.
 
-> Catatan: dataset ini bersifat sintetis (dibuat untuk latihan), sehingga hubungan antar fitur dan harga tidak selalu kuat/realistis. Fokus tugas adalah **kelengkapan dan kebenaran alur**, bukan akurasi tertinggi.
+**Fitur apa saja yang dipakai untuk mengelompokkan?**
+Jumlah kehamilan (`Pregnancies`), kadar glukosa (`Glucose`), tekanan darah (`BloodPressure`), ketebalan lipatan kulit (`SkinThickness`), kadar insulin (`Insulin`), indeks massa tubuh (`BMI`), skor riwayat genetik diabetes (`DiabetesPedigreeFunction`), dan usia (`Age`). Ada juga kolom `Outcome` (status diabetes pasien yang sebenarnya) di dataset ini, tapi kolom itu **sengaja tidak dipakai** saat proses pengelompokan — baru dipakai di akhir untuk mengecek apakah hasil pengelompokan otomatis tadi ternyata masuk akal secara medis atau tidak.
 
-## 6. Deployment ke Streamlit Community Cloud
+**Algoritma apa yang dipakai?**
+Dua metode clustering dicoba dan dibandingkan: **K-Means** (mengelompokkan data berdasarkan titik pusat terdekat) dan **Hierarchical Clustering** (mengelompokkan data secara bertahap, dari yang paling mirip digabung dulu). **PCA** juga dipakai, bukan untuk mengelompokkan, tapi supaya hasil pengelompokan yang tadinya berdimensi 8 (8 fitur) bisa digambar dalam bentuk grafik 2 dimensi yang enak dilihat.
 
-1. Push seluruh folder `project/` ini (termasuk folder `model/` yang berisi `model.pkl`) ke sebuah **repository GitHub baru** (public).
-2. Buka [share.streamlit.io](https://share.streamlit.io), login dengan akun GitHub.
-3. Klik **"New app"** → pilih repository, branch, dan set **Main file path** ke `app.py`.
-4. Klik **Deploy**. Streamlit Cloud otomatis membaca `requirements.txt` dan menginstall dependency.
-5. Setelah build selesai, kamu akan dapat tautan publik seperti `https://<nama-app>.streamlit.app`.
+**Bagaimana cara tahu jumlah kelompok yang tepat?**
+Tidak ditebak asal, tapi diukur pakai tiga cara: **Elbow Method** (grafik yang menunjukkan titik di mana penambahan kelompok baru sudah tidak banyak membantu lagi), **Silhouette Score** (mengukur seberapa rapat anggota dalam satu kelompok dan seberapa jauh dari kelompok lain), dan **Davies-Bouldin Index** (metrik serupa, tapi arah baiknya kebalikan — semakin kecil semakin bagus).
 
-### Alternatif: Deploy ke Hugging Face Spaces
+**Di mana kodenya?**
+Semua proses ada di file [`unsupervised_diabetes/unsupervised_diabetes_clustering.ipynb`](./unsupervised_diabetes/unsupervised_diabetes_clustering.ipynb), lengkap dari eksplorasi data sampai kesimpulan hasil pengelompokan.
 
-1. Buka [huggingface.co/new-space](https://huggingface.co/new-space).
-2. Pilih **SDK: Streamlit**, beri nama Space, set visibility Public.
-3. Upload semua file (`app.py`, `requirements.txt`, folder `model/`) ke Space tersebut (lewat web UI, drag & drop, atau `git push` — Spaces adalah repo Git).
-4. Space otomatis build dan menyediakan tautan publik `https://huggingface.co/spaces/<username>/<nama-space>`.
+**Cara menjalankan notebooknya sendiri:**
+```bash
+cd unsupervised_diabetes
+jupyter notebook unsupervised_diabetes_clustering.ipynb
+```
+Baris pertama masuk ke folder studi kasus 2. Baris kedua membuka notebook-nya. Pastikan file `diabetes.csv` ada di folder yang sama, karena notebook membaca data dari situ.
 
-## 7. Sumber
+---
 
-- Dataset: [Car Price Prediction — Kaggle, oleh zafarali27](https://www.kaggle.com/datasets/zafarali27/car-price-prediction)
-- Library: scikit-learn, pandas, numpy, joblib, streamlit
+## Isi Folder Repository Ini
+
+Supaya nggak bingung file mana untuk apa, berikut penjelasan tiap folder dan file:
+
+- **`data/`** — berisi file dataset mentah untuk studi kasus 1 (harga mobil), sebelum diolah.
+- **`model/`** — berisi model yang sudah selesai dilatih (`model.pkl`), file bantu untuk aplikasi Gradio (`feature_options.json`), dan tabel perbandingan hasil evaluasi model (`model_comparison.csv`).
+- **`unsupervised_diabetes/`** — folder khusus untuk seluruh isi studi kasus 2, berisi notebook clustering dan dataset diabetes-nya sendiri.
+- **`model_training.ipynb`** — notebook lengkap studi kasus 1 (proses melatih model prediksi harga mobil).
+- **`app.py`** — aplikasi Gradio untuk studi kasus 1, supaya model bisa dicoba lewat tampilan web.
+- **`inference.py`** — skrip Python sederhana untuk memakai model yang sudah dilatih tanpa perlu membuka notebook atau aplikasi web.
+- **`requirements.txt`** — daftar library Python yang dibutuhkan supaya semua kode di repo ini bisa jalan.
+- **`README.md`** — file yang sedang kamu baca ini, isinya penjelasan keseluruhan proyek.
+
+---
+
+## Tentang
+
+Repository ini dibuat sebagai tugas akhir mata kuliah Fundamental Sains Data oleh  kelompok manut.
